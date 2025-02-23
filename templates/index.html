@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignFlow</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            overflow-y: scroll;
+        }
+
+        header {
+            background-color: blueviolet;
+            width: 100%;
+            padding-top: 10px;
+            padding-left: 10px;
+            padding-bottom: 10px;
+        }
+
+        header h1 {
+            padding: 0;
+            margin: 0;
+            font-size: 20px;
+            color: white;
+            width: 25%;
+            height: 10%;
+        }
+
+        #container {
+            margin: auto;
+            margin-top: 20vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            width: 80%;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0px 0px 10px;
+            }
+
+            50% {
+                box-shadow: 0px 0px 20px;
+            }
+
+            100% {
+                box-shadow: 0px 0px 10px;
+            }
+        }
+
+        #record {
+            margin: 10px;
+            width: 100px;
+            height: 100px;
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0px 0px 10px;
+            font-size: 15px;
+            color: rgb(65, 6, 119);
+            animation: pulse 2s infinite;
+        }
+
+        #record:hover {
+            transform: scale(1.1);
+        }
+
+        #button-p {
+            margin-top: 10px;
+            padding: 10px;
+            font-weight: 500;
+            color: rgb(65, 6, 119);
+        }
+
+        #gen-text {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 20vh;
+        }
+
+        #gen-signs {
+            margin-top: 20px;
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: blueviolet;
+            color: white;
+        }
+
+        #gen-signs:hover {
+            border: 2px solid rgb(173, 123, 219)
+        }
+
+        #text {
+            border: 1px solid blueviolet;
+            border-radius: 5px;
+            color: rgb(65, 6, 119);
+            width: 98%;
+            padding: 10px;
+            resize: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #text::placeholder {
+            color: rgba(64, 6, 119, 0.788);
+            font-style: italic;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>SignFlow</h1>
+    </header>
+    <div id="container">
+        <button id="record"><b>Record</b></button>
+        <p id="button-p">Click to Record audio or Input text below</p>
+
+        <div id="gen-text">
+            <p></p>
+            <textarea name="text" id="text" cols="70" rows="6" placeholder="Listening..."></textarea>
+        </div>
+        <button id="gen-signs" onclick="generateSigns()">Generate Hand Signs</button>
+        
+        <!-- Add a container for videos -->
+        <div id="videos" style="margin-top: 20px; width: 100%;"></div>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        
+        // Initialize the record button
+        document.getElementById('record').addEventListener('click', toggleRecording);
+        
+        async function toggleRecording() {
+            const recordButton = document.getElementById('record');
+            const textArea = document.getElementById('text');
+            
+            if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+                // Start recording
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    
+                    mediaRecorder.ondataavailable = (event) => {
+                        audioChunks.push(event.data);
+                    };
+                    
+                    mediaRecorder.onstop = async () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                        await convertSpeechToText(audioBlob);
+                        audioChunks = [];
+                    };
+                    
+                    mediaRecorder.start();
+                    recordButton.style.backgroundColor = 'red';
+                    recordButton.innerHTML = '<b>Stop</b>';
+                    textArea.placeholder = 'Recording...';
+                    
+                } catch (err) {
+                    console.error('Error accessing microphone:', err);
+                    alert('Error accessing microphone. Please ensure microphone permissions are granted.');
+                }
+            } else {
+                // Stop recording
+                mediaRecorder.stop();
+                recordButton.style.backgroundColor = '';
+                recordButton.innerHTML = '<b>Record</b>';
+                textArea.placeholder = 'Converting speech to text...';
+            }
+        }
+        
+        async function convertSpeechToText(audioBlob) {
+            const formData = new FormData();
+            formData.append('audio', audioBlob);
+            
+            try {
+                const response = await fetch('/speech-to-text', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('text').value = data.text;
+                    document.getElementById('text').placeholder = 'Listening...';
+                } else {
+                    alert(data.error || 'Error converting speech to text');
+                    document.getElementById('text').placeholder = 'Listening...';
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error converting speech to text');
+                document.getElementById('text').placeholder = 'Listening...';
+            }
+        }
+
+        async function generateSigns() {
+            // Clean the text before sending
+            const rawText = document.getElementById('text').value;
+            const text = rawText.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, ' ').trim();
+            
+            if (!text) return;
+
+            try {
+                const response = await fetch('/translate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ text: text })
+                });
+
+                const data = await response.json();
+                const videosDiv = document.getElementById('videos');
+                videosDiv.innerHTML = '';
+
+                if (data.videos.length === 0) {
+                    videosDiv.innerHTML = '<p style="color: rgb(65, 6, 119); text-align: center;">No signs found for the given text.</p>';
+                    return;
+                }
+
+                // Get the found words from the response
+                const foundWords = data.text.toLowerCase().split(' ');
+                
+                // Create video elements only for words that have videos
+                const videos = data.videos.map((videoId, index) => {
+                    const container = document.createElement('div');
+                    container.style.display = 'none';
+                    container.style.marginBottom = '20px';
+                    container.style.textAlign = 'center';
+                    container.style.position = 'relative';
+                    container.style.padding = '10px';
+                    container.style.borderRadius = '10px';
+                    container.style.backgroundColor = 'white';
+                    container.style.boxShadow = '0 0 15px rgba(138, 43, 226, 0.2)';  // Soft purple glow
+                    container.style.border = '2px solid blueviolet';
+
+                    // Add video first
+                    const video = document.createElement('video');
+                    video.style.width = '100%';
+                    video.style.borderRadius = '8px';  // Rounded corners for video
+                    video.src = `/videos/${videoId}`;
+                    container.appendChild(video);
+
+                    // Add word label with absolute positioning
+                    const label = document.createElement('p');
+                    const originalWord = Object.keys(data.mappings).find(key => data.mappings[key] === foundWords[index]);
+                    label.textContent = originalWord ? `${originalWord} → ${foundWords[index]}` : foundWords[index];
+                    label.style.position = 'absolute';
+                    label.style.top = '20px';  // Adjusted to account for container padding
+                    label.style.right = '20px';
+                    label.style.color = 'rgb(65, 6, 119)';
+                    label.style.fontSize = '24px';
+                    label.style.fontWeight = 'bold';
+                    label.style.margin = '0';
+                    label.style.padding = '5px 10px';
+                    label.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';  // More opaque background
+                    label.style.borderRadius = '5px';
+                    label.style.zIndex = '1';
+                    label.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)';  // Subtle shadow for label
+                    container.appendChild(label);
+
+                    videosDiv.appendChild(container);
+                    return { container, video };
+                });
+
+                // Show first video
+                videos[0].container.style.display = 'block';
+
+                // Scroll to videos section smoothly
+                videosDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                // Function to play videos sequentially
+                let currentVideoIndex = 0;
+                
+                async function playNextVideo() {
+                    if (currentVideoIndex < videos.length) {
+                        const current = videos[currentVideoIndex];
+                        current.container.style.display = 'block';
+                        
+                        try {
+                            await current.video.play();
+                            
+                            current.video.onended = () => {
+                                current.container.style.display = 'none';
+                                currentVideoIndex++;
+                                playNextVideo();
+                            };
+                        } catch (error) {
+                            console.error('Error playing video:', error);
+                        }
+                    } else {
+                        // All videos finished, show them all for review
+                        videos.forEach(({ container, video }) => {
+                            container.style.display = 'block';
+                            video.controls = true; // Add controls for replay
+                        });
+                    }
+                }
+
+                // Start playing the sequence
+                playNextVideo();
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('videos').innerHTML = 
+                    '<p style="color: rgb(65, 6, 119); text-align: center;">Error generating signs. Please try again.</p>';
+            }
+        }
+
+        // Optional: Handle Enter key in textarea
+        document.getElementById('text').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                generateSigns();
+            }
+        });
+    </script>
+</body>
+
+</html>
