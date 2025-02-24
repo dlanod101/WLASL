@@ -44,6 +44,10 @@ def get_synonyms(word):
         return ['hello']
     elif word == 'is':
         return ['']
+    elif word == 'the':
+        return ['']
+    elif word == 'and':
+        return ['']
         
     synonyms = set()
     for syn in wordnet.synsets(word):
