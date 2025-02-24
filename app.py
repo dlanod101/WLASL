@@ -2,18 +2,18 @@ import nltk
 import os
 
 # Create a data directory if it doesn't exist
-if not os.path.exists(os.path.expanduser('~/nltk_data')):
-    os.makedirs(os.path.expanduser('~/nltk_data'))
+#if not os.path.exists(os.path.expanduser('~/nltk_data')):
+#    os.makedirs(os.path.expanduser('~/nltk_data'))
 
 # Download required NLTK data
-try:
-    nltk.data.find('corpora/wordnet')
-except LookupError:
-    nltk.download('wordnet')
-try:
-    nltk.data.find('taggers/averaged_perceptron_tagger')
-except LookupError:
-    nltk.download('averaged_perceptron_tagger')
+#try:
+#    nltk.data.find('corpora/wordnet')
+#except LookupError:
+#    nltk.download('wordnet')
+#try:
+#    nltk.data.find('taggers/averaged_perceptron_tagger')
+#except LookupError:
+    #nltk.download('averaged_perceptron_tagger')
 
 from flask import Flask, request, jsonify, send_file, render_template
 from predict import WLASLRetrieval
