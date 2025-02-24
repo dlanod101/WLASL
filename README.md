@@ -70,7 +70,7 @@ The current web version supports the following words:
 and a few synonyms.
 
 ## Testing
-- Here are some test sentences
+Here are some test sentences
 - Hello, I happy.
 - I want water.
 - Mother help family.
