@@ -69,6 +69,34 @@ The current web version supports the following words:
 | yes        | 69546    |
 and a few synonyms.
 
+## Testing
+- Here are some test sentences
+- Hello, I happy.
+- I want water.
+- Mother help family.
+- Man woman walk.
+- What problem?
+- I eat fish.
+- Chair black.
+- Family cool.
+- I like school.
+- Graduate year.
+- Bed white.
+- No, leave now.
+- Bird chair.
+- Call mother.
+- Enjoy book.
+- Hot now.
+- Give clothes.
+- Apple bad.
+- Meet school.
+- Deaf doctor work.
+- Yes, I study.
+- Visit family.
+- Ball wrong.
+- Time go.
+- Drink water now.
+
 ## Usage
 1. Enter a supported word into the text input field.
 2. The app will retrieve and display the corresponding ASL video.
