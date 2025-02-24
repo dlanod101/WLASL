@@ -24,7 +24,7 @@ app = Flask(__name__)
 
 # Initialize the WLASL retriever
 json_path = r"wlasl_data/WLASL_v0.3.json"
-video_dir = r"wlasl_data/refined_videos"
+video_dir = r"wlasl_data/new_refined_videos"
 class_list_path = r"wlasl_data/wlasl_class_list.txt"
 
 # Initialize the speech recognizer
