@@ -42,6 +42,8 @@ def get_synonyms(word):
         return ['represent']
     elif word == 'hi':
         return ['hello']
+    elif word == 'is':
+        return ['']
         
     synonyms = set()
     for syn in wordnet.synsets(word):
