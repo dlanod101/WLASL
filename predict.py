@@ -86,8 +86,8 @@ class WLASLRetrieval:
         return video_paths
 
 if __name__ == "__main__":
-    json_path = r"wlasl_data\WLASL_v0.3.json"
-    video_dir = r"wlasl_data\necessary_videos"
+    json_path = r"wlasl_data/WLASL_v0.3.json"
+    video_dir = r"wlasl_data/refined_videos"
     class_list_path = r"wlasl_data\wlasl_class_list.txt"
 
     print("\nInitializing retriever...")  # Debug print
