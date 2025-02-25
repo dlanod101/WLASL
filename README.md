@@ -67,6 +67,8 @@ The current web version supports the following words:
 | wrong      | 64087    |
 | year       | 64211    |
 | yes        | 69546    |
+| to         | 58730    |
+| my         | 69404    |
 
 ## Testing
 Here are some test sentences
