@@ -69,6 +69,7 @@ The current web version supports the following words:
 | yes        | 69546    |
 | to         | 58730    |
 | my         | 69404    |
+| welcome    | 62837    |
 
 ## Testing
 Here are some test sentences
